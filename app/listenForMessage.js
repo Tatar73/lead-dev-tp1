@@ -25,11 +25,8 @@ const pubSubClient = new PubSub({
 });
 
 // Create Storage client with proper authentication
-const path = require('path');
-const keyFilePath = path.join(__dirname, '..', 'dmii-2025-d3c4bf954d39.json');
 const storage = new Storage({
   projectId: process.env.PROJECT_ID,
-  keyFilename: keyFilePath
 });
 
 // Function to process zip job
@@ -69,7 +66,10 @@ async function processZipJob(tags) {
     
     // 5. Upload to Google Cloud Storage
     const filename = `photos-${tags}-${Date.now()}.zip`;
-    const bucketName = process.env.STORAGE_BUCKET || 'dmii2025bucket';
+    const bucketName = process.env.STORAGE_BUCKET;
+    if (!bucketName) {
+      throw new Error('STORAGE_BUCKET environment variable is not set');
+    }
     const bucket = storage.bucket(bucketName);
     const file = bucket.file(filename);
     
