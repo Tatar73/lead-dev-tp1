@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1759759990034" clover="3.2.0">
-  <project timestamp="1759759990034" name="All files">
+<coverage generated="1759823044996" clover="3.2.0">
+  <project timestamp="1759823044996" name="All files">
     <metrics statements="59" coveredstatements="59" conditionals="16" coveredconditionals="16" methods="11" coveredmethods="11" elements="86" coveredelements="86" complexity="0" loc="59" ncloc="59" packages="1" files="5" classes="5"/>
     <file name="form_validator.js" path="/Users/killianelattar/Library/Mobile Documents/com~apple~CloudDocs/Document/Gobelins/Cours/M2/Lead Dev/TP1/app/form_validator.js">
       <metrics statements="5" coveredstatements="5" conditionals="4" coveredconditionals="4" methods="3" coveredmethods="3"/>

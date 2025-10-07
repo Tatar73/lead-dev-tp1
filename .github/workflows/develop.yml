@@ -25,7 +25,6 @@ jobs:
         run: |
           npm install
           npm test
-          make test-coverage
 
       - name: Coveralls
         uses: coverallsapp/github-action@v2
