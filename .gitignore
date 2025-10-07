@@ -1,3 +1,13 @@
 node_modules
 npm-debug.log*
 .DS_Store
+dmii-2025-d3c4bf954d39.json
+
+# Environment variables
+.env
+.env.local
+
+# Google Cloud credentials
+*.json
+!package.json
+!package-lock.json
