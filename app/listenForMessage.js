@@ -7,7 +7,6 @@ const dotenv = require('dotenv');
 const { getAuthClient } = require('./auth');
 const photoModel = require('./photo_model');
 const request = require('request');
-const ZipStream = require('zip-stream');
 
 dotenv.config();
 
@@ -46,6 +45,7 @@ async function processZipJob(tags) {
     console.log(`📸 Found ${photos.length} photos, zipping first ${photosToZip.length}`);
     
     // 3. Create zip in memory
+    var ZipStream = require('zip-stream');
     const zip = new ZipStream();
     const chunks = [];
     
