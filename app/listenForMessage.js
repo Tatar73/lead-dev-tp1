@@ -7,7 +7,7 @@ const dotenv = require('dotenv');
 const { getAuthClient } = require('./auth');
 const photoModel = require('./photo_model');
 const request = require('request');
-const { default: ZipStream } = require('zip-stream');
+const ZipStream = require('zip-stream');
 
 dotenv.config();
 
