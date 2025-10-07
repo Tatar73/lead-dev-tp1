@@ -1,6 +1,12 @@
+// Load environment variables from .env file
+require('dotenv').config();
+
 const express = require('express');
 const favicon = require('serve-favicon');
 const path = require('path');
+
+// Import Pub/Sub message listener
+const { startListener } = require('./listenForMessage');
 
 const app = express();
 
@@ -21,5 +27,10 @@ require('./route')(app);
 const port = process.env.PORT || 3000;
 app.server = app.listen(port);
 console.log(`listening on port ${port}`);
+
+// Start Pub/Sub message listener
+console.log('🚀 Starting Pub/Sub message listener...');
+startListener();
+
 
 module.exports = app;

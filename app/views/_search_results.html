@@ -8,6 +8,22 @@
 
     <% if (photos.length) { %>
 
+      <div style="margin-bottom: 15px;">
+        <button id="zipPhotosBtn" class="btn btn-primary" onclick="zipPhotos()">
+          <span class="glyphicon glyphicon-compressed"></span> Zip 10 First Photos
+        </button>
+        <span id="zipStatus" style="margin-left: 10px;"></span>
+      </div>
+
+      <% if (downloadLink) { %>
+        <div class="alert alert-success" style="margin-bottom: 15px;">
+          <strong>Zip available!</strong><br>
+          <a href="<%= downloadLink %>" class="btn btn-success" download style="margin-top: 10px;">
+            <span class="glyphicon glyphicon-download-alt"></span> Download Zip
+          </a>
+        </div>
+      <% } %>
+
       <ul>
         <% photos.forEach(function (photo) { %>
           <li class="list-unstyled">
@@ -26,3 +42,33 @@
   </div>
 
 </div>
+
+<script>
+function zipPhotos() {
+  const tags = '<%= tagsParameter %>';
+  const zipBtn = document.getElementById('zipPhotosBtn');
+  const zipStatus = document.getElementById('zipStatus');
+  
+  // Disable button during request
+  zipBtn.disabled = true;
+  zipStatus.innerHTML = '<span class="text-info">Processing...</span>';
+  
+  fetch('/zip?tags=' + encodeURIComponent(tags), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    zipBtn.disabled = false;
+    zipStatus.innerHTML = '<span class="text-success">✓ ' + data.message + '</span>';
+    setTimeout(() => { zipStatus.innerHTML = ''; }, 3000);
+  })
+  .catch(error => {
+    zipBtn.disabled = false;
+    zipStatus.innerHTML = '<span class="text-danger">✗ Error: ' + error.message + '</span>';
+    console.error('Error:', error);
+  });
+}
+</script>
