@@ -33,5 +33,5 @@ jobs:
 
       - name: Build and push the hello-docker image
         run: |
-          docker build . --tag ghcr.io/Tatar73/hello-docker-gcr-demo:staging
-          docker push ghcr.io/Tatar73/hello-docker-gcr-demo:staging
+          docker build . --tag ghcr.io/deselikem/hello-docker-gcr-demo:staging
+          docker push ghcr.io/deselikem/hello-docker-gcr-demo:staging
