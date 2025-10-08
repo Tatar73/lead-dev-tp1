@@ -14,11 +14,11 @@ const TOKEN_COST = 10;
 
 // Configuration Redis
 const redisClient = createClient({
-  username: process.env.REDIS_USERNAME || undefined,
-  password: process.env.REDIS_PASSWORD || undefined,
+  username: process.env.REDIS_USERNAME,
+  password: process.env.REDIS_PASSWORD,
   socket: {
-    host: process.env.REDIS_HOST || 'localhost',
-    port: parseInt(process.env.REDIS_PORT || '6379', 10)
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT
   }
 });
 
