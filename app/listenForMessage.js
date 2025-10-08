@@ -31,8 +31,13 @@ const storage = new Storage({
 });
 
 // Function to process zip job
-async function processZipJob(tags) {
-  console.log(`\n[ZIP_JOB] Starting zip job for tags: "${tags}"`);
+async function processZipJob(tags, prenom) {
+  console.log(`\n[ZIP_JOB] Starting zip job for tags: "${tags}", user: "${prenom}"`);
+  
+  // Validate prenom parameter
+  if (!prenom) {
+    throw new Error('Prenom parameter is required for zip job');
+  }
   
   try {
     // 1. Get photos from Flickr
@@ -128,9 +133,6 @@ async function processZipJob(tags) {
     const storagePath = `gs://${bucketName}/${filename}`;
     const photoLinks = photosToZip.map(photo => photo.media.m);
     
-    // Get prenom from environment variables
-    const prenom = process.env.PRENOM; 
-    
     console.log(`[FIREBASE] Saving zip data to Firebase Realtime Database`);
     console.log(`[FIREBASE] - Path: /${prenom}/<timestamp>/${filename}`);
     console.log(`[FIREBASE] - Photos count: ${photoLinks.length}`);
@@ -138,11 +140,11 @@ async function processZipJob(tags) {
     await saveZipDataToFirebase(prenom, filename, signedUrl, storagePath, photoLinks);
     console.log(`[FIREBASE] ✓ Zip data saved successfully for user "${prenom}"`);
 
-    console.log(`\n[ZIP_JOB] ✓ Job completed successfully for tags: "${tags}"\n`);
+    console.log(`\n[ZIP_JOB] ✓ Job completed successfully for tags: "${tags}", user: "${prenom}"\n`);
     return signedUrl;
     
   } catch (error) {
-    console.error(`\n[ZIP_JOB] ✗ Error processing zip job for tags "${tags}":`, error.message);
+    console.error(`\n[ZIP_JOB] ✗ Error processing zip job for tags "${tags}", user "${prenom}":`, error.message);
     console.error(`[ZIP_JOB] ✗ Error details:`, error);
     
     throw error;
@@ -226,7 +228,17 @@ async function listenForMessages(subscriptionNameOrId) {
       // Process zip job if tags are provided
       if (messageData.tags && messageData.requestType === 'zip') {
         console.log(`[PUBSUB] → Routing to ZIP job handler`);
-        await processZipJob(messageData.tags);
+        
+        // Extract prenom from message data
+        const prenom = messageData.prenom;
+        
+        if (!prenom) {
+          console.error(`[PUBSUB] ✗ Message does not contain prenom - skipping processing`);
+          message.ack();
+          return;
+        }
+        
+        await processZipJob(messageData.tags, prenom);
       } else {
         console.log(`[PUBSUB] ⚠ Message does not contain tags or is not a zip request - skipping processing`);
       }

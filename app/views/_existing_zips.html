@@ -21,12 +21,22 @@
     const loadStatus = document.getElementById('loadZipsStatus');
     const zipsList = document.getElementById('zipsList');
 
+    // Check if user is authenticated
+    if (!window.currentUser) {
+      zipsList.innerHTML = '<div class="alert alert-warning"><span class="glyphicon glyphicon-lock"></span> Please sign in with Google to view your ZIP files.</div>';
+      loadStatus.innerHTML = '';
+      return;
+    }
+
+    // Get user's first name (prenom)
+    const prenom = window.currentUser.displayName ? window.currentUser.displayName.split(' ')[0] : 'Unknown';
+
     // Show loading state
     loadStatus.innerHTML = '<span class="text-info"><span class="glyphicon glyphicon-hourglass"></span> Loading...</span>';
     zipsList.innerHTML = '';
 
     // Call server API to get ZIPs (secure way)
-    fetch('/api/zips')
+    fetch('/api/zips?prenom=' + encodeURIComponent(prenom))
       .then(response => {
         if (!response.ok) {
           throw new Error('Failed to load ZIPs');
@@ -102,6 +112,16 @@
     }
   }
 
-  // Auto-load ZIPs when page loads
-  window.addEventListener('DOMContentLoaded', loadExistingZips);
+  // Auto-load ZIPs when page loads (if user is authenticated)
+  window.addEventListener('DOMContentLoaded', () => {
+    // Wait a bit for authentication to be initialized
+    setTimeout(() => {
+      if (window.currentUser) {
+        loadExistingZips();
+      } else {
+        const zipsList = document.getElementById('zipsList');
+        zipsList.innerHTML = '<div class="alert alert-warning"><span class="glyphicon glyphicon-lock"></span> Please sign in with Google to view your ZIP files.</div>';
+      }
+    }, 1000);
+  });
 </script>

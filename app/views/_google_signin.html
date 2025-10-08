@@ -1,0 +1,106 @@
+<!-- Google Sign-In Authentication Section -->
+<div class="panel panel-primary" style="margin-top: 20px;">
+  <div class="panel-heading">
+    <h3 class="panel-title">
+      <span class="glyphicon glyphicon-user"></span> 
+      Authentication
+    </h3>
+  </div>
+  <div class="panel-body">
+    <!-- Not authenticated view -->
+    <div id="notAuthView" style="display: none;">
+      <button id="signInBtn" class="btn btn-danger btn-lg">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
+             style="width: 24px; height: 24px; margin-right: 10px; vertical-align: middle;" 
+             alt="Google">
+        Sign in with Google
+      </button>
+    </div>
+    
+    <!-- Authenticated view -->
+    <div id="authView" style="display: none;">
+      <div class="media">
+        <div class="media-left">
+          <img id="userPhoto" style="width: 64px; height: 64px; border-radius: 50%;" src="" alt="Profile">
+        </div>
+        <div class="media-body" style="padding-left: 15px;">
+          <h4><span id="userName"></span></h4>
+          <p class="text-muted"><span id="userEmail"></span></p>
+          <button id="signOutBtn" class="btn btn-default btn-sm">
+            <span class="glyphicon glyphicon-log-out"></span> Sign Out
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div id="authStatus" style="margin-top: 15px;"></div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+  let auth, provider;
+
+  // Initialize
+  async function init() {
+    const res = await fetch('/api/firebase-config');
+    const { firebaseConfig } = await res.json();
+    
+    const app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    provider = new GoogleAuthProvider();
+    
+    onAuthStateChanged(auth, updateUI);
+  }
+
+  // Update UI based on auth state
+  function updateUI(user) {
+    const notAuthView = document.getElementById('notAuthView');
+    const authView = document.getElementById('authView');
+    
+    if (user) {
+      // Store user info globally for other components
+      window.currentUser = user;
+      
+      document.getElementById('userName').textContent = user.displayName;
+      document.getElementById('userEmail').textContent = user.email;
+      document.getElementById('userPhoto').src = user.photoURL;
+      notAuthView.style.display = 'none';
+      authView.style.display = 'block';
+      
+      // Load ZIPs if function exists
+      if (window.loadExistingZips) window.loadExistingZips();
+    } else {
+      // Clear user info when signed out
+      window.currentUser = null;
+      
+      notAuthView.style.display = 'block';
+      authView.style.display = 'none';
+    }
+  }
+
+  // Sign in
+  document.getElementById('signInBtn')?.addEventListener('click', async () => {
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error('[AUTH] Sign-in error:', error);
+      alert('Sign-in failed: ' + error.message);
+    }
+  });
+
+  // Sign out
+  document.getElementById('signOutBtn')?.addEventListener('click', async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('[AUTH] Sign-out error:', error);
+      alert('Sign-out failed: ' + error.message);
+    }
+  });
+
+  // Initialize on load
+  init();
+</script>

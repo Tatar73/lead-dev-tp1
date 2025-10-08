@@ -70,17 +70,24 @@ function route(app) {
   // Apply rate limiter only to /zip endpoint
   app.post('/zip', rateLimiter, async (req, res) => {
     const tags = req.query.tags;
+    const prenom = req.query.prenom;
 
     // validate tags parameter
     if (!tags) {
       return res.status(400).send({ error: 'Tags parameter is required' });
     }
 
-    console.log(`Received request to zip photos for tags: ${tags}`);
+    // validate prenom parameter
+    if (!prenom) {
+      return res.status(401).send({ error: 'Authentication required: prenom parameter is missing' });
+    }
+
+    console.log(`Received request to zip photos for tags: ${tags}, user: ${prenom}`);
     
     try {
       const message = {
         tags: tags,
+        prenom: prenom,
         timestamp: new Date().toISOString(),
         requestType: 'zip'
       };
@@ -91,6 +98,7 @@ function route(app) {
       return res.status(202).json({ 
         message: 'Zip job queued successfully',
         tags: tags,
+        prenom: prenom,
         checkStatusAt: `/job-status/${tags}`
       });
 
@@ -106,13 +114,13 @@ function route(app) {
   // API endpoint to get existing ZIPs from Firebase (secure)
   app.get('/api/zips', async (req, res) => {
     try {
-      const prenom = process.env.PRENOM;
+      const prenom = req.query.prenom;
       
       if (!prenom) {
-        console.error('[API] PRENOM environment variable not set');
-        return res.status(500).json({ 
+        console.error('[API] Prenom parameter is required');
+        return res.status(400).json({ 
           success: false, 
-          error: 'Server configuration error' 
+          error: 'Prenom parameter is required' 
         });
       }
 
@@ -140,6 +148,36 @@ function route(app) {
       return res.status(500).json({ 
         success: false, 
         error: 'Failed to fetch ZIP files' 
+      });
+    }
+  });
+
+  // API endpoint to get Firebase config (only public config, no secrets!)
+  app.get('/api/firebase-config', (req, res) => {
+    try {
+      // Only send public Firebase config (safe to expose to client)
+      const firebaseConfig = {
+        apiKey: process.env.API_KEY,
+        authDomain: process.env.AUTH_DOMAIN,
+        databaseURL: process.env.DATABASE_URL,
+        projectId: process.env.PROJECT_ID,
+        storageBucket: process.env.STORAGE_BUCKET,
+        messagingSenderId: process.env.MESSAGING_SENDER_ID,
+        appId: process.env.APP_ID
+      };
+
+      console.log('[API] Firebase config requested');
+      
+      return res.json({ 
+        success: true, 
+        firebaseConfig 
+      });
+      
+    } catch (error) {
+      console.error('[API] ✗ Error providing Firebase config:', error.message);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Failed to load configuration' 
       });
     }
   });

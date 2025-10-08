@@ -13,6 +13,10 @@
           <span class="glyphicon glyphicon-compressed"></span> Zip 10 First Photos
         </button>
         <span id="zipStatus" style="margin-left: 10px;"></span>
+        <div id="zipAuthWarning" class="alert alert-warning" style="margin-top: 10px; display: none;">
+          <span class="glyphicon glyphicon-warning-sign"></span>
+          <strong>Authentication required:</strong> Please sign in with Google to zip photos.
+        </div>
       </div>
 
       <% if (downloadLink) { %>
@@ -44,16 +48,46 @@
 </div>
 
 <script>
+// Store current user info globally
+window.currentUser = null;
+
 function zipPhotos() {
   const tags = '<%= tagsParameter %>';
   const zipBtn = document.getElementById('zipPhotosBtn');
   const zipStatus = document.getElementById('zipStatus');
+  const zipAuthWarning = document.getElementById('zipAuthWarning');
+  
+  // Check if user is authenticated
+  if (!window.currentUser) {
+    zipAuthWarning.style.display = 'block';
+    zipStatus.innerHTML = '<span class="text-danger"><span class="glyphicon glyphicon-remove"></span> You must be signed in to zip photos</span>';
+    
+    // Scroll to the Google Sign-in section
+    const authSection = document.querySelector('.panel-primary');
+    if (authSection) {
+      authSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    // Clear error message after 10 seconds
+    setTimeout(() => {
+      zipStatus.innerHTML = '';
+      zipAuthWarning.style.display = 'none';
+    }, 10000);
+    
+    return;
+  }
+  
+  // Hide warning if shown
+  zipAuthWarning.style.display = 'none';
+  
+  // Get user's first name (prenom)
+  const prenom = window.currentUser.displayName ? window.currentUser.displayName.split(' ')[0] : 'Unknown';
   
   // Disable button during request
   zipBtn.disabled = true;
   zipStatus.innerHTML = '<span class="text-info"><span class="glyphicon glyphicon-hourglass"></span> Processing...</span>';
   
-  fetch('/zip?tags=' + encodeURIComponent(tags), {
+  fetch('/zip?tags=' + encodeURIComponent(tags) + '&prenom=' + encodeURIComponent(prenom), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
