@@ -24,7 +24,8 @@ function getAuthClient() {
 
   // Validate that this is a service account key
   if (keys.type !== 'service_account') {
-    throw new Error('Invalid credentials: type must be "service_account"');
+    console.error('Invalid credentials: type must be "service_account"');
+    return;
   }
 
   // Create JWT client using the new constructor method (not deprecated)

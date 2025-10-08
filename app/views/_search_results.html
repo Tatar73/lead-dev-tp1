@@ -97,14 +97,14 @@ function zipPhotos() {
     // Check if response is rate limited
     if (response.status === 429) {
       return response.json().then(data => {
-        throw new Error(`Rate limit exceeded. Please wait ${data.retryAfter} second(s). Available tokens: ${data.availableTokens}/${data.requiredTokens}`);
+        console.error(`Rate limit exceeded. Please wait ${data.retryAfter} second(s). Available tokens: ${data.availableTokens}/${data.requiredTokens}`);
       });
     }
     
     // Check for other errors
     if (!response.ok) {
       return response.json().then(data => {
-        throw new Error(data.error || 'Request failed');
+        console.error(data.error || 'Request failed');
       });
     }
     
