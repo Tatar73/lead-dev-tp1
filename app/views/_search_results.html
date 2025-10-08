@@ -51,7 +51,7 @@ function zipPhotos() {
   
   // Disable button during request
   zipBtn.disabled = true;
-  zipStatus.innerHTML = '<span class="text-info">Processing...</span>';
+  zipStatus.innerHTML = '<span class="text-info"><span class="glyphicon glyphicon-hourglass"></span> Processing...</span>';
   
   fetch('/zip?tags=' + encodeURIComponent(tags), {
     method: 'POST',
@@ -59,16 +59,41 @@ function zipPhotos() {
       'Content-Type': 'application/json'
     }
   })
-  .then(response => response.json())
+  .then(response => {
+    // Check if response is rate limited
+    if (response.status === 429) {
+      return response.json().then(data => {
+        throw new Error(`Rate limit exceeded. Please wait ${data.retryAfter} second(s). Available tokens: ${data.availableTokens}/${data.requiredTokens}`);
+      });
+    }
+    
+    // Check for other errors
+    if (!response.ok) {
+      return response.json().then(data => {
+        throw new Error(data.error || 'Request failed');
+      });
+    }
+    
+    return response.json();
+  })
   .then(data => {
     zipBtn.disabled = false;
-    zipStatus.innerHTML = '<span class="text-success">✓ ' + data.message + '</span>';
-    setTimeout(() => { zipStatus.innerHTML = ''; }, 3000);
+    zipStatus.innerHTML = '<span class="text-success"><span class="glyphicon glyphicon-ok"></span> ' + data.message + '</span>';
+    
+    // Clear success message after 5 seconds
+    setTimeout(() => {
+      zipStatus.innerHTML = '';
+    }, 5000);
   })
   .catch(error => {
     zipBtn.disabled = false;
-    zipStatus.innerHTML = '<span class="text-danger">✗ Error: ' + error.message + '</span>';
+    zipStatus.innerHTML = '<span class="text-danger"><span class="glyphicon glyphicon-warning-sign"></span> ' + error.message + '</span>';
     console.error('Error:', error);
+    
+    // Clear error message after 10 seconds
+    setTimeout(() => {
+      zipStatus.innerHTML = '';
+    }, 10000);
   });
 }
 </script>

@@ -5,3 +5,36 @@
   display: inline-block;
   margin: 0 10px 20px 0;
 }
+
+#zipStatus {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-weight: bold;
+  animation: fadeIn 0.3s ease-in;
+}
+
+#zipStatus .text-danger {
+  color: #d9534f;
+  background-color: #f9e6e6;
+  padding: 8px 12px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+#zipStatus .text-success {
+  color: #5cb85c;
+  background-color: #e6f9e6;
+  padding: 8px 12px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+#zipStatus .text-info {
+  color: #5bc0de;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}

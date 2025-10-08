@@ -29,7 +29,7 @@ app.server = app.listen(port);
 console.log(`listening on port ${port}`);
 
 // Start Pub/Sub message listener
-console.log('🚀 Starting Pub/Sub message listener...');
+console.log('Starting Pub/Sub message listener...');
 startListener();
 
 

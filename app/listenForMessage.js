@@ -14,6 +14,7 @@ dotenv.config();
 // In production, use a database like Redis or Firestore
 const zipFilesStore = new Map();
 
+
 // Get authenticated client
 const authClient = getAuthClient();
 
@@ -30,7 +31,7 @@ const storage = new Storage({
 
 // Function to process zip job
 async function processZipJob(tags) {
-  console.log(`\n🔄 Starting zip job for tags: ${tags}`);
+  console.log(`\nStarting zip job for tags: ${tags}`);
   
   try {
     // 1. Get photos from Flickr
@@ -42,11 +43,11 @@ async function processZipJob(tags) {
     
     // 2. Take only first 10 photos
     const photosToZip = photos.slice(0, 10);
-    console.log(`📸 Found ${photos.length} photos, zipping first ${photosToZip.length}`);
+    console.log(`Found ${photos.length} photos, zipping first ${photosToZip.length}`);
     
     // 3. Create zip in memory
-    var ZipStream = require('zip-stream');
-    const zip = new ZipStream();
+    const ZipStream = require('zip-stream');
+    const zip = new ZipStream.default();
     const chunks = [];
     
     // Collect zip data in memory
@@ -62,7 +63,7 @@ async function processZipJob(tags) {
     
     // Wait for zip to complete
     const zipBuffer = await zipPromise;
-    console.log(`📦 Zip created, size: ${zipBuffer.length} bytes`);
+    console.log(`Zip created, size: ${zipBuffer.length} bytes`);
     
     // 5. Upload to Google Cloud Storage
     const filename = `photos-${tags}-${Date.now()}.zip`;
@@ -83,12 +84,12 @@ async function processZipJob(tags) {
     
     await new Promise((resolve, reject) => {
       stream.on('error', (err) => {
-        console.error('❌ Upload error:', err);
+        console.error('Upload error:', err);
         reject(err);
       });
       
       stream.on('finish', () => {
-        console.log('✅ Upload finished');
+        console.log('Upload finished');
         resolve('Ok');
       });
       
@@ -101,16 +102,16 @@ async function processZipJob(tags) {
       expires: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days
     });
     
-    console.log(`✅ Zip uploaded successfully: ${signedUrl}`);
+    console.log(`Zip uploaded successfully: ${signedUrl}`);
     
     // Store the filename for this tags combination
     zipFilesStore.set(tags, filename);
-    console.log(`💾 Stored filename "${filename}" for tags "${tags}"`);
+    console.log(`Stored filename "${filename}" for tags "${tags}"`);
 
     return signedUrl;
     
   } catch (error) {
-    console.error(`❌ Error processing zip job for tags "${tags}":`, error);
+    console.error(`Error processing zip job for tags "${tags}":`, error);
     
     throw error;
   }
@@ -131,13 +132,13 @@ function addFilesToZip(zip, photos) {
       const photo = photos[index];
       const filename = `photo-${index + 1}-${photo.title.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 50)}.jpg`;
       
-      console.log(`  📥 Adding file ${index + 1}/${photos.length}: ${filename}`);
+      console.log(`  Adding file ${index + 1}/${photos.length}: ${filename}`);
       
       const stream = request(photo.media.m);
       
       zip.entry(stream, { name: filename }, (err) => {
         if (err) {
-          console.error(`❌ Error adding file ${filename}:`, err);
+          console.error(`Error adding file ${filename}:`, err);
           reject(err);
           return;
         }
@@ -169,7 +170,7 @@ async function listenForMessages(subscriptionNameOrId) {
 
   // Create an event handler to handle messages
   const messageHandler = async (message) => {
-    console.log(`\n📨 Received message ${message.id}:`);
+    console.log(`\nReceived message ${message.id}:`);
     console.log(`\tData: ${message.data.toString()}`);
     console.log(`\tAttributes:`, message.attributes);
     
@@ -188,17 +189,17 @@ async function listenForMessages(subscriptionNameOrId) {
       
       // Process zip job if tags are provided
       if (messageData.tags && messageData.requestType === 'zip') {
-        console.log(`\n🚀 Processing zip job for tags: ${messageData.tags}`);
+        console.log(`\nProcessing zip job for tags: ${messageData.tags}`);
         await processZipJob(messageData.tags);
       } else {
-        console.log(`\t⚠️  Message does not contain tags or is not a zip request`);
+        console.log(`\tMessage does not contain tags or is not a zip request`);
       }
       
       // "Ack" (acknowledge receipt of) the message
       message.ack();
-      console.log(`✅ Message ${message.id} acknowledged`);
+      console.log(`Message ${message.id} acknowledged`);
     } catch (error) {
-      console.error(`❌ Error processing message ${message.id}:`, error);
+      console.error(`Error processing message ${message.id}:`, error);
       // Nack the message to requeue it
       message.nack();
     }
@@ -206,14 +207,14 @@ async function listenForMessages(subscriptionNameOrId) {
 
   // Handle errors
   const errorHandler = (error) => {
-    console.error('❌ Error receiving message:', error);
+    console.error('Error receiving message:', error);
   };
 
   // Listen for new messages continuously
   subscription.on('message', messageHandler);
   subscription.on('error', errorHandler);
 
-  console.log(`🎧 Listening for messages on subscription: ${subscriptionNameOrId}`);
+  console.log(`Listening for messages on subscription: ${subscriptionNameOrId}`);
 }
 
 // Function to start listening with environment variables
@@ -221,7 +222,7 @@ function startListener() {
   const subscriptionName = process.env.SUBSCRIPTION_NAME;
   
   if (!subscriptionName) {
-    console.error('❌ SUBSCRIPTION_NAME not set in environment variables');
+    console.error('SUBSCRIPTION_NAME not set in environment variables');
     return;
   }
   

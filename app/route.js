@@ -3,6 +3,7 @@ const photoModel = require('./photo_model');
 const { sendMessage } = require('./pubsub');
 const { zipFilesStore, storage } = require('./listenForMessage');
 const moment = require('moment');
+const { rateLimiter } = require('./rate_limiter');
 
 function route(app) {
   app.get('/', async (req, res) => {
@@ -64,7 +65,9 @@ function route(app) {
         return res.status(500).send({ error });
       });
   });
-  app.post('/zip', async (req, res) => {
+  
+  // Apply rate limiter only to /zip endpoint
+  app.post('/zip', rateLimiter, async (req, res) => {
     const tags = req.query.tags;
 
     // validate tags parameter
