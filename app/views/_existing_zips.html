@@ -1,0 +1,107 @@
+<!-- Section to display existing ZIP files from Firebase -->
+<div class="panel panel-info" style="margin-top: 30px;">
+  <div class="panel-heading">
+    <h3 class="panel-title">
+      <span class="glyphicon glyphicon-folder-open"></span> 
+      My Generated ZIP Files
+    </h3>
+  </div>
+  <div class="panel-body">
+    <span id="loadZipsStatus" style="margin-left: 10px;"></span>
+    
+    <div id="zipsList" style="margin-top: 20px;">
+      <!-- ZIP files will be displayed here -->
+    </div>
+  </div>
+</div>
+
+<script>
+  // Load existing ZIPs from server API (no credentials exposed!)
+  function loadExistingZips() {
+    const loadStatus = document.getElementById('loadZipsStatus');
+    const zipsList = document.getElementById('zipsList');
+
+    // Show loading state
+    loadStatus.innerHTML = '<span class="text-info"><span class="glyphicon glyphicon-hourglass"></span> Loading...</span>';
+    zipsList.innerHTML = '';
+
+    // Call server API to get ZIPs (secure way)
+    fetch('/api/zips')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to load ZIPs');
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.success && data.zips) {
+          displayZipFiles(data.zips);
+          loadStatus.innerHTML = '<span class="text-success"><span class="glyphicon glyphicon-ok"></span> Loaded successfully!</span>';
+          setTimeout(() => {
+            loadStatus.innerHTML = '';
+          }, 3000);
+        } else {
+          zipsList.innerHTML = '<div class="alert alert-warning">No ZIP files found yet. Create your first ZIP!</div>';
+          loadStatus.innerHTML = '';
+        }
+      })
+      .catch((error) => {
+        console.error('[CLIENT] Error loading ZIPs:', error);
+        loadStatus.innerHTML = '<span class="text-danger"><span class="glyphicon glyphicon-warning-sign"></span> Error: ' + error.message + '</span>';
+      });
+  }
+
+  // Function to display ZIP files in a nice table
+  function displayZipFiles(data) {
+    const zipsList = document.getElementById('zipsList');
+    
+    let html = '<table class="table table-striped table-hover">';
+    html += '<thead><tr>';
+    html += '<th>Time Created</th>';
+    html += '<th>Filename</th>';
+    html += '<th>Photos</th>';
+    html += '<th>Created At</th>';
+    html += '<th>Actions</th>';
+    html += '</tr></thead><tbody>';
+
+    let count = 0;
+    
+    // Iterate through each time slot
+    for (const timeSlot in data) {
+      const timeData = data[timeSlot];
+      
+      // Iterate through each file in that time slot
+      for (const fileKey in timeData) {
+        const zipData = timeData[fileKey];
+        count++;
+        
+        // Format the creation date
+        const createdDate = new Date(zipData.createdAt);
+        const formattedDate = createdDate.toLocaleString('fr-FR');
+        
+        html += '<tr>';
+        html += `<td><span class="label label-info">${timeSlot.replace(/-/g, ':')}</span></td>`;
+        html += `<td><strong>${zipData.filename}</strong></td>`;
+        html += `<td><span class="badge">${zipData.photoCount}</span> photos</td>`;
+        html += `<td>${formattedDate}</td>`;
+        html += `<td>`;
+        html += `<a href="${zipData.signedUrl}" class="btn btn-success btn-sm" target="_blank">`;
+        html += `<span class="glyphicon glyphicon-download-alt"></span> Download`;
+        html += `</a>`;
+        html += `</td>`;
+        html += '</tr>';
+      }
+    }
+    
+    html += '</tbody></table>';
+    
+    if (count === 0) {
+      zipsList.innerHTML = '<div class="alert alert-info">No ZIP files found yet.</div>';
+    } else {
+      zipsList.innerHTML = `<p class="text-muted">Found ${count} ZIP file(s)</p>` + html;
+    }
+  }
+
+  // Auto-load ZIPs when page loads
+  window.addEventListener('DOMContentLoaded', loadExistingZips);
+</script>

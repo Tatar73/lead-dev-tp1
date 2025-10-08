@@ -2,6 +2,7 @@ const formValidator = require('./form_validator');
 const photoModel = require('./photo_model');
 const { sendMessage } = require('./pubsub');
 const { zipFilesStore, storage } = require('./listenForMessage');
+const { getZipDataByPrenom } = require('./firebase');
 const moment = require('moment');
 const { rateLimiter } = require('./rate_limiter');
 
@@ -98,6 +99,47 @@ function route(app) {
       return res.status(500).send({ 
         error: 'Failed to queue zip job',
         details: error.message
+      });
+    }
+  });
+
+  // API endpoint to get existing ZIPs from Firebase (secure)
+  app.get('/api/zips', async (req, res) => {
+    try {
+      const prenom = process.env.PRENOM;
+      
+      if (!prenom) {
+        console.error('[API] PRENOM environment variable not set');
+        return res.status(500).json({ 
+          success: false, 
+          error: 'Server configuration error' 
+        });
+      }
+
+      console.log(`[API] Fetching ZIPs for user: ${prenom}`);
+      
+      // Fetch data from Firebase (credentials are secure on server)
+      const zipData = await getZipDataByPrenom(prenom);
+      
+      if (zipData) {
+        console.log(`[API] ✓ Found ZIP data for ${prenom}`);
+        return res.json({ 
+          success: true, 
+          zips: zipData 
+        });
+      } else {
+        console.log(`[API] No ZIP data found for ${prenom}`);
+        return res.json({ 
+          success: true, 
+          zips: null 
+        });
+      }
+      
+    } catch (error) {
+      console.error('[API] ✗ Error fetching ZIPs:', error.message);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Failed to fetch ZIP files' 
       });
     }
   });
