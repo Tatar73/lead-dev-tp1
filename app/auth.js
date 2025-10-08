@@ -15,6 +15,7 @@ function getAuthClient() {
   
   if (!credentialsPath) {
     console.error('❌ GOOGLE_APPLICATION_CREDENTIALS environment variable is not set');
+    return;
   }
 
   // Read and parse the JSON key file

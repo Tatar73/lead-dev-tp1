@@ -4,7 +4,6 @@
 const {PubSub} = require('@google-cloud/pubsub');
 const {Storage} = require('@google-cloud/storage');
 const dotenv = require('dotenv');
-const { getAuthClient } = require('./auth');
 const photoModel = require('./photo_model');
 const request = require('request');
 const { saveZipDataToFirebase } = require('./firebase');
@@ -17,12 +16,11 @@ const zipFilesStore = new Map();
 
 
 // Get authenticated client
-const authClient = getAuthClient();
+// const authClient = getAuthClient();
 
 // Creates a client; cache this for further use
 const pubSubClient = new PubSub({
-  projectId: process.env.PROJECT_ID,
-  authClient
+  projectId: process.env.PROJECT_ID
 });
 
 // Create Storage client with proper authentication
