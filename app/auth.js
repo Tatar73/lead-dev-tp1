@@ -15,7 +15,6 @@ function getAuthClient() {
   
   if (!credentialsPath) {
     console.error('❌ GOOGLE_APPLICATION_CREDENTIALS environment variable is not set');
-    return;
   }
 
   // Read and parse the JSON key file
@@ -25,7 +24,6 @@ function getAuthClient() {
   // Validate that this is a service account key
   if (keys.type !== 'service_account') {
     console.error('Invalid credentials: type must be "service_account"');
-    return;
   }
 
   // Create JWT client using the new constructor method (not deprecated)

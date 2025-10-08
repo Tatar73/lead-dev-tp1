@@ -37,7 +37,6 @@ async function processZipJob(tags, prenom) {
   // Validate prenom parameter
   if (!prenom) {
     console.error('[ZIP_JOB] ✗ Prenom parameter is required for zip job');
-    return;
   }
   
   try {
@@ -47,7 +46,6 @@ async function processZipJob(tags, prenom) {
     
     if (!photos || photos.length === 0) {
       console.error(`[FLICKR] ✗ No photos found for tags: "${tags}"`);
-      return;
     }
     
     // 2. Take only first 10 photos
@@ -87,7 +85,6 @@ async function processZipJob(tags, prenom) {
     
     if (!bucketName) {
       console.error('[STORAGE] ✗ STORAGE_BUCKET environment variable is not set');
-      return;
     }
     
     console.log(`[STORAGE] Initializing bucket connection...`);
